@@ -41,7 +41,7 @@ function saveRecord(record) {
 /**
  * 
  */
-function checkDatabase() {
+function checkDatabase(cb) {
   // open a transaction on your pending db
   const transaction = db.transaction(["pending"], "readwrite");
   // access your pending object store
@@ -51,6 +51,7 @@ function checkDatabase() {
 
   getAll.onsuccess = function() {
     if (getAll.result.length > 0) {
+
       fetch("/api/transaction/bulk", {
         method: "POST",
         body: JSON.stringify(getAll.result),
@@ -71,8 +72,12 @@ function checkDatabase() {
         store.clear();
       });
     }
+
+    // run callback if needed (this is used when manipulating funds)
+    if (cb) cb();
   };
 }
 
 // listen for app coming back online
-window.addEventListener("online", checkDatabase);
+// changed to anonymous to force no callback
+window.addEventListener("online", () => { checkDatabase() });
